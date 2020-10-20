@@ -103,6 +103,49 @@ class Cart extends Component
 	{
 		$this->tax = "0%";
 	}
+
+	public function increaseItem($rowId)
+	{
+		$idProduct = substr($rowId, 4,5);
+		$product = ModelsProduct::find($idProduct);
+		$cart = \Cart::session(Auth()->id())->getContent();
+		$checkItem = $cart->whereIn('id', $rowId);
+
+		if ($product->qty == $checkItem[$rowId]->quantity) {
+			session()->flash('error', 'Jumlah item kurang');
+		}else {
+			\Cart::session(Auth()->id())->update($rowId, [
+				'quantity' => [
+					'relative' => true,
+					'value' => 1
+				]
+			]);
+		}
+	}
+
+	public function decreaseItem($rowId)
+	{
+		$idProduct = substr($rowId, 4,5);
+		$product = ModelsProduct::find($idProduct);
+		$cart = \Cart::session(Auth()->id())->getContent();
+		$checkItem = $cart->whereIn('id', $rowId);
+
+		if ($checkItem[$rowId]->quantity == 1) {
+			$this->removeItem($rowId);
+		}else{
+			\Cart::session(Auth()->id())->update($rowId, [
+				'quantity' => [
+					'relative' => true,
+					'value' => -1
+				]
+			]);
+		}
+	}
+
+	public function removeItem($rowId)
+	{
+		\Cart::session(Auth()->id())->remove($rowId);
+	}
 }
 
 
