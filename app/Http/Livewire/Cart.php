@@ -6,14 +6,25 @@ use Livewire\Component;
 use App\Models\Product as ModelsProduct;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Livewire\WithPagination;
 
 class Cart extends Component
 {
+	use WithPagination;
+	protected $paginationTheme = 'bootstrap';
+
 	public $tax = "0%";
+
+	public $search;
+
+	public function updatingSearch()
+	{
+		$this->resetPage();
+	}
 
 	public function render()
 	{
-		$products = ModelsProduct::orderBy('created_at', 'DESC')->get();
+		$products = ModelsProduct::where('name', 'like', '%'.$this->search.'%')->orderBy('created_at', 'DESC')->paginate(2);
 		$condition = new \Darryldecode\Cart\CartCondition([
 			'name' => 'pajak',
 			'type' => 'tax',
