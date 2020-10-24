@@ -24,7 +24,7 @@ class Cart extends Component
 
 	public function render()
 	{
-		$products = ModelsProduct::where('name', 'like', '%'.$this->search.'%')->orderBy('created_at', 'DESC')->paginate(2);
+		$products = ModelsProduct::where('name', 'like', '%'.$this->search.'%')->orderBy('created_at', 'DESC')->paginate(12);
 		$condition = new \Darryldecode\Cart\CartCondition([
 			'name' => 'pajak',
 			'type' => 'tax',
@@ -82,15 +82,23 @@ class Cart extends Component
 		$cart = \Cart::session(Auth()->id())->getContent();
 		$cekItemId = $cart->whereIn('id', $rowId);
 
+		$idProduct = substr($rowId, 4,5);
+		$product = ModelsProduct::find($idProduct);
+
 		if($cekItemId->isNotEmpty()) {
-			\Cart::session(Auth()->id())->update($rowId,
-				[
-					'quantity' => 
+			if ($product->qty == $cekItemId[$rowId]->quantity) {
+				session()->flash('error', 'Jumlah item kurang');
+			}else {
+				\Cart::session(Auth()->id())->update($rowId,
 					[
-						'relative' => true,
-						'value' => 1
+						'quantity' => 
+						[
+							'relative' => true,
+							'value' => 1
+						]
 					]
-				]);
+				);
+			}
 		}else {
 			$product = ModelsProduct::findOrFail($id);
 			\Cart::session(Auth()->id())->add([
